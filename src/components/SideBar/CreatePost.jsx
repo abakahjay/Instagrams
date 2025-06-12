@@ -129,6 +129,7 @@ function useCreatePost() {
 	const addPost = useProfileStore((state) => state.addPost);
 	const { userProfile, setUserProfile } = useProfileStore();
 	const { pathname } = useLocation();
+	const apiUrl = import.meta.env.VITE_API_URL
 	// console.log(authUser._id)
 	const handleCreatePost = async (formDatas2,selectedFile, caption) => {
 		if (isLoading) return;
@@ -144,7 +145,7 @@ function useCreatePost() {
 
 		try {
 			formDatas2.append('caption',caption)
-			const data=await fetch(`http://localhost:7004/api/v1/posts/?userId=${authUser._id}`,{
+			const data=await fetch(`${apiUrl}/api/v1/posts/?userId=${authUser._id}`,{
 				method: 'POST',
 				body: formDatas2,
 			})

@@ -1,6 +1,6 @@
 import ChatApp from "./components/ChatApp/ChatAppDemo.jsx";
 import { createBrowserRouter, RouterProvider, Navigate, useNavigate } from 'react-router-dom';
-import {Homepage} from './pages/Homepage/Homepage'
+// import {Homepage} from './pages/Homepage/Homepage'
 import { Authpage } from "./pages/Authpage/Authpage.jsx";
 import PageLayout from "./Layouts/PageLayouts/PageLayout.jsx";
 import { useEffect, useState } from "react";
@@ -12,6 +12,9 @@ import useLogout from "./hooks/useLogout.js";
 import { Flex, Spinner } from "@chakra-ui/react";
 import useShowToast from "./hooks/useShowToast.js";
 import ChatModal from "./components/Modals/messagesModal.jsx";
+import Try1 from "./components/test/Try1.jsx";
+import Homepage from "./routes/homePage/Homepage.jsx"
+import Dashboard from "./routes/dashboardPage/Dashboard.jsx";
 
 
 export default function App(){
@@ -67,10 +70,10 @@ export default function App(){
 
     const router = createBrowserRouter([
         {
-            path: '/',
+            path: '/dashboard',
             element: (
                 <PageLayout authUser={authUser} onLogout={handleLogout}>
-                    {authUser ? <Homepage  authUser={authUser} onLogout={handleLogout}/> : <Navigate to="/auth" />}
+                    {authUser ? <Dashboard authUser={authUser} onLogout={handleLogout}/> : <Navigate to="/auth" />}
                 </PageLayout>
             ),
         },
@@ -86,6 +89,14 @@ export default function App(){
             ),
         },
         {
+            path: '/auth/test',//Just for testing
+            element: (
+                <>
+                    <Try1 onAuth={setAuthUser}/>
+                </>
+            ),
+        },
+        {
             path: '/:username',
             element: (
                 <PageLayout authUser={authUser} onLogout={handleLogout}>
@@ -95,7 +106,7 @@ export default function App(){
             ),
         },
         {
-            path: '/messages/:id',
+            path: '/messages/:id', 
             element: (
                 <PageLayout authUser={authUser} onLogout={handleLogout}>
                     {/* {authUser ? <ProfilePage authUser={authUser} onLogout={handleLogout} /> : <Navigate to="/auth" onLogout={handleLogout}/>} */}
@@ -109,6 +120,12 @@ export default function App(){
                 <PageLayout authUser={authUser} onLogout={handleLogout}>
                     {authUser ? <MessagesPage authUser={authUser} onLogout={handleLogout} /> : <Navigate to="/auth" onLogout={handleLogout}/>}
                 </PageLayout>
+            ),
+        },
+        {
+            path: '/',
+            element: (
+                    <Homepage authUser={authUser} onLogout={handleLogout} />
             ),
         },
     ]);

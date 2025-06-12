@@ -13,6 +13,7 @@ const useEditProfile = () => {
 	const setAuthUser= useAuthStore((state)=>state.setAuthUser)
 	const setUserProfile = useProfileStore((state) => state.setUserProfile);
 	const showToast = useShowToast();
+    const apiUrl = import.meta.env.VITE_API_URL
     // console.log(authUser)
 	const editProfile = async (inputs, selectedFile,formDatas,username,tokens) => {
         // console.log(formDatas.get('profile_pictures'))
@@ -23,7 +24,7 @@ const useEditProfile = () => {
 		try {
 			if (selectedFile) {
                 // Upload the image
-                const data=await fetch(`http://localhost:7004/api/v1/userse/${username}/editUserProfile`,{
+                const data=await fetch(`${apiUrl}/api/v1/userse/${username}/editUserProfile`,{
                     method: 'PATCH',
                     body: formDatas,
                 })

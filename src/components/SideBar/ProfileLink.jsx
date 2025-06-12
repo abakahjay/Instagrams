@@ -30,7 +30,7 @@ const ProfileLink = ({authUser,onLogout}) => {
 				justifyContent={{ base: "center", md: "flex-start" }}
 			>
 				<Avatar size={"sm"} src={url||''} />
-				<Box display={{ base: "none", md: "block" }}>Profile</Box>
+				<Box display={{ base: "none", md: "block" }}>{user.username}</Box>
 			</Link>
 		</Tooltip>
 	);

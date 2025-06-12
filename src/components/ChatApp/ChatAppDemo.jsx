@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import io from 'socket.io-client';
+const apiUrl = import.meta.env.VITE_API_URL
 
-const socket = io('http://localhost:7004',{
+const socket = io(apiUrl,{
     reconnection: true, // Enable reconnection
     reconnectionAttempts: 5, // Maximum reconnection attempts
     reconnectionDelay: 5000, // Delay between attempts

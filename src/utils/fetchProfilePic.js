@@ -1,5 +1,6 @@
 export const fetchProfilePic = async (imageId) => {
-    const response = await fetch(`http://localhost:7004/api/v1/uploadFiles/download/${imageId}`);
+    const apiUrl = import.meta.env.VITE_API_URL
+    const response = await fetch(`${apiUrl}/api/v1/uploadFiles/download/${imageId}`);
     if (!response.ok) {
         throw new Error('Failed to fetch image');
     }

@@ -1,20 +1,35 @@
-import { Box, Flex, Image, Text, VStack } from "@chakra-ui/react";
+import { Box, chakra, Flex, Image, Text, VStack } from "@chakra-ui/react";
 import { useState } from "react";
 import Login from "./Login";
 import Signup from "./Signup";
 import GoogleAuth from "./GoogleAuth";
+import { ChatGptLogo1 } from "../../assets/constants";
 //Everything is in pixels
 
-export function AuthForm({onAuth}){
+export function AuthForm({ onAuth }) {
     const [isLogin, setIsLogin] = useState(true);
+    const ChatGptLogos = chakra(ChatGptLogo1)
 
     return (
         <>
             <Box border={"1px solid gray"} borderRadius={4} padding={5}>
                 <VStack spacing={4}>
-                    <Image src='/logo.png' h={24} cursor={"pointer"} alt='Instagram' />
+                    <Flex alignItems={'center'} justifyContent={'center'} gap={2} padding='25px'>
+                        <ChatGptLogos boxSize='48px' />
+                        <Text
+                            cursor="pointer"
+                            fontSize="2xl"
+                            whiteSpace="nowrap"
+                            bgGradient="linear(to-r, #ce1126, #fcd116, #007940)" // Red → Yellow → Green
+                            bgClip="text"
+                            fontWeight="bold"
+                        >
+                            GH-GPT
+                        </Text>
 
-                    {isLogin ? <Login onAuth={onAuth} /> : <Signup onAuth={onAuth}/>}
+                    </Flex>
+
+                    {isLogin ? <Login onAuth={onAuth} /> : <Signup onAuth={onAuth} />}
 
                     {/* ---------------- OR -------------- */}
                     <Flex alignItems={"center"} justifyContent={"center"} my={4} gap={1} w={"full"}>
