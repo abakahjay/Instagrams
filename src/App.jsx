@@ -15,7 +15,7 @@ import ChatModal from "./components/Modals/messagesModal.jsx";
 import Try1 from "./components/test/Try1.jsx";
 import Homepage from "./routes/homePage/Homepage.jsx"
 import Dashboard from "./routes/dashboardPage/Dashboard.jsx";
-
+import ChatPage from "./routes/chatPage/Chatpage1.jsx";
 
 export default function App(){
     const showToast = useShowToast()
@@ -78,6 +78,14 @@ export default function App(){
             ),
         },
         {
+            path: '/chat',
+            element: (
+                <PageLayout authUser={authUser} onLogout={handleLogout}>
+                    {authUser ? <ChatPage authUser={authUser} onLogout={handleLogout}/> : <Navigate to="/auth" />}
+                </PageLayout>
+            ),
+        },
+        {
             path: '/auth',
             element: (
                 <>
@@ -106,16 +114,16 @@ export default function App(){
             ),
         },
         {
-            path: '/messages/:id', 
+            path: '/chat/:id',
             element: (
                 <PageLayout authUser={authUser} onLogout={handleLogout}>
                     {/* {authUser ? <ProfilePage authUser={authUser} onLogout={handleLogout} /> : <Navigate to="/auth" onLogout={handleLogout}/>} */}
-                    <ChatModal authUser={authUser}  onLogout={handleLogout} />
+                    {authUser ? <ChatPage authUser={authUser} onLogout={handleLogout}/> : <Navigate to="/auth" />}
                 </PageLayout>
             ),
         },
         {
-            path: '/messages',
+            path: '/history',
             element: (
                 <PageLayout authUser={authUser} onLogout={handleLogout}>
                     {authUser ? <MessagesPage authUser={authUser} onLogout={handleLogout} /> : <Navigate to="/auth" onLogout={handleLogout}/>}

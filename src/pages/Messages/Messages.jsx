@@ -1,34 +1,89 @@
 import React from "react";
-import { Box, Heading, VStack, Text, Avatar, Link } from "@chakra-ui/react";
-import { Link as RouterLink } from "react-router-dom";
+import {
+  Box,
+  Heading,
+  VStack,
+  Text,
+  IconButton,
+  HStack,
+  Spacer
+} from "@chakra-ui/react";
+import { DeleteIcon } from "@chakra-ui/icons";
+import { useNavigate } from "react-router-dom";
 
 export default function MessagesPage() {
-    const conversations = [
-        // Example data, replace with actual data from your backend
-        { id: 1, username: "john_doe", lastMessage: "Hey, how's it going?", avatar: "/path/to/avatar1.jpg" },
-        { id: 2, username: "jane_smith", lastMessage: "Are you available tomorrow?", avatar: "/path/to/avatar2.jpg" },
-    ];
+  const navigate = useNavigate();
 
-    return (
-        <Box p={4}>
-            <Heading size="lg" mb={4}>
-                Messages
-            </Heading>
-            <VStack spacing={4} align="stretch">
-                {conversations.map((conv) => (
-                    <Link as={RouterLink} to={`/messages/${conv.id}`} key={conv.id}>
-                        <Box p={4} borderWidth="1px" borderRadius="md" _hover={{ bg: "gray.100" }} display="flex" alignItems="center">
-                            <Avatar src={conv.avatar} size="md" mr={4} />
-                            <Box>
-                                <Text fontWeight="bold">{conv.username}</Text>
-                                <Text color="gray.500" fontSize="sm" isTruncated>
-                                    {conv.lastMessage}
-                                </Text>
-                            </Box>
-                        </Box>
-                    </Link>
-                ))}
-            </VStack>
-        </Box>
-    );
+  const conversations = [
+    { id: "chat123", title: "Product Inquiry", datetime: "2025-06-12 14:30" },
+    { id: "chat456", title: "Order Support", datetime: "2025-06-11 09:15" },
+    { id: "chat789", title: "Shipping Delay", datetime: "2025-06-10 16:00" },
+    { id: "chat101", title: "Billing Question", datetime: "2025-06-09 11:45" },
+  ];
+
+  const handleDelete = (chatId) => {
+    navigate(`/chat/${chatId}`);
+  };
+
+  const handleOpenChat = (chatId) => {
+    navigate(`/chat/${chatId}`);
+  };
+
+  return (
+    <Box p={{ base: 2, md: 4 }} bg="#000" minH="100vh" color="white">
+      <Heading size="lg" mb={4} textAlign="center">
+        AI Chat History
+      </Heading>
+
+      <Box
+        maxH="80vh"
+        overflowY="auto"
+        border="1px solid #333"
+        borderRadius="md"
+        p={2}
+      >
+        <VStack spacing={1} align="stretch">
+          {conversations.map((conv) => (
+            <Box
+              key={conv.id}
+              minH="40px" // reduced individual chat height
+              px={3}
+              py={1}
+              borderWidth="1px"
+              borderColor="gray.700"
+              borderRadius="md"
+              bg="gray.900"
+              _hover={{ bg: "gray.800", cursor: "pointer" }}
+              onClick={() => handleOpenChat(conv.id)}
+            >
+              <HStack>
+                <Text fontWeight="bold" noOfLines={1} fontSize="sm">
+                  {conv.title}
+                </Text>
+                <Spacer />
+                <IconButton
+                  icon={<DeleteIcon />}
+                  aria-label="Delete conversation"
+                  colorScheme="red"
+                  size="xs"
+                  onClick={(e) => {
+                    e.stopPropagation(); 
+                    handleDelete(conv.id);
+                  }}
+                />
+              </HStack>
+              <Text
+                fontSize="xs"
+                color="gray.400"
+                textAlign="right"
+                mt="1px"
+              >
+                {conv.datetime}
+              </Text>
+            </Box>
+          ))}
+        </VStack>
+      </Box>
+    </Box>
+  );
 }

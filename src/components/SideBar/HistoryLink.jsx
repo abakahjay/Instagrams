@@ -15,7 +15,7 @@ const HistoryLink = () => {
         >
             <Link
                 display={"flex"}
-                to={"/messages"}
+                to={"/history"}
                 as={RouterLink}
                 alignItems={"center"}
                 gap={4}

@@ -1,17 +1,22 @@
-import { Box, Flex, Tooltip } from "@chakra-ui/react";
+import { Box, Flex, Tooltip ,Link} from "@chakra-ui/react";
+import { AiFillHome } from "react-icons/ai";
+import { Link as RouterLink } from "react-router-dom";
 import { NotificationsLogo ,NewChatLogo} from "../../assets/constants";
 
 const NewChat = () => {
   return (
     <Tooltip
       hasArrow
-      label={"Notifications"}
+      label={"New  Chat"}
       placement='right'
       ml={1}
       openDelay={500}
       display={{ base: "block", md: "none" }}
     >
-      <Flex
+      <Link
+        display={"flex"}
+        to={"/chat"}
+        as={RouterLink}
         alignItems={"center"}
         gap={4}
         _hover={{ bg: "whiteAlpha.400" }}
@@ -22,7 +27,7 @@ const NewChat = () => {
       >
         <NewChatLogo />
         <Box display={{ base: "none", md: "block" }}>New Chat</Box>
-      </Flex>
+      </Link>
     </Tooltip>
   );
 };

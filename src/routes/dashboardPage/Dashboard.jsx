@@ -6,33 +6,42 @@ import {
   Textarea,
   IconButton,
   Button,
-  VStack,
 } from "@chakra-ui/react";
 import { FaMicrophone } from "react-icons/fa";
 import { FiPlus } from "react-icons/fi";
 import { IoIosArrowRoundUp } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
 
-const Dashboard = ({ onSend }) => {
+const Dashboard = () => {
   const [input, setInput] = useState("");
   const [fileInfo, setFileInfo] = useState(null);
-  const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const fileInputRef = useRef(null);
-
   const recognitionRef = useRef(null);
+  const navigate = useNavigate();
 
   const handleSend = () => {
-    if (input.trim()) {
-      onSend(input.trim());
-      setInput("");
-      setTranscript("");
+    const trimmed = input.trim();
+    if (!trimmed && !fileInfo) return;
+
+    if (trimmed) {
+      localStorage.setItem("firstMessage", trimmed);
     }
+
+    if (fileInfo) {
+      localStorage.setItem("fileInfo", JSON.stringify(fileInfo));
+    }
+
+    setInput("");
+    setTranscript("");
+    setFileInfo(null);
+    navigate("/chat");
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const size = (file.size / 1024).toFixed(1); // KB
+      const size = (file.size / 1024).toFixed(1); // in KB
       setFileInfo({
         name: file.name,
         type: file.type,
@@ -52,12 +61,12 @@ const Dashboard = ({ onSend }) => {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    recognition.onstart = () => setListening(true);
+    recognition.onstart = () => {};
     recognition.onresult = (event) => {
       const result = event.results[0][0].transcript;
       setTranscript(result);
     };
-    recognition.onend = () => setListening(false);
+    recognition.onend = () => {};
 
     recognition.start();
     recognitionRef.current = recognition;
@@ -75,7 +84,7 @@ const Dashboard = ({ onSend }) => {
   };
 
   return (
-    <Flex h="100vh" w="100%" justify="center" align="center" bg="#000" px={4}>
+    <Flex h="100vh" bg="#000" justify="center" align="center" px={4}>
       <Box w={{ base: "100%", md: "60%" }} maxW="700px">
         <Text fontSize="2xl" fontWeight="bold" mb={6} color="white" textAlign="center">
           What can I help with?
@@ -89,7 +98,6 @@ const Dashboard = ({ onSend }) => {
           py={4}
           boxShadow="lg"
         >
-          {/* File Info Preview */}
           {fileInfo && (
             <Box mb={3} color="gray.300" fontSize="sm">
               <Text>📄 {fileInfo.name}</Text>
@@ -98,7 +106,6 @@ const Dashboard = ({ onSend }) => {
             </Box>
           )}
 
-          {/* Transcription Preview */}
           {transcript && (
             <Flex
               justify="space-between"
@@ -207,7 +214,7 @@ const Dashboard = ({ onSend }) => {
                   <Box
                     w="2px"
                     h="8px"
-                    bg={input.trim() ? "black" : "gray.400"}
+                    bg={input.trim() || fileInfo ? "black" : "gray.400"}
                     mx="auto"
                     mt="-4px"
                     borderRadius="full"
@@ -217,10 +224,10 @@ const Dashboard = ({ onSend }) => {
               aria-label="Send"
               onClick={handleSend}
               isRound
-              bg={input.trim() ? "white" : "transparent"}
-              color={input.trim() ? "black" : "gray.400"}
+              bg={input.trim() || fileInfo ? "white" : "transparent"}
+              color={input.trim() || fileInfo ? "black" : "gray.400"}
               _hover={
-                input.trim()
+                input.trim() || fileInfo
                   ? { bg: "whiteAlpha.800" }
                   : { bg: "gray.700" }
               }
