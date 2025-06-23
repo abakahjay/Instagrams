@@ -114,7 +114,7 @@ export default function App(){
             ),
         },
         {
-            path: '/chat/:id',
+            path: '/chat/:chatId',
             element: (
                 <PageLayout authUser={authUser} onLogout={handleLogout}>
                     {/* {authUser ? <ProfilePage authUser={authUser} onLogout={handleLogout} /> : <Navigate to="/auth" onLogout={handleLogout}/>} */}

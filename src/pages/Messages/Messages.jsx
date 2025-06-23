@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   Heading,
@@ -6,23 +6,38 @@ import {
   Text,
   IconButton,
   HStack,
-  Spacer
+  Spacer,
+  Spinner
 } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { useNavigate } from "react-router-dom";
+import useAiChatActions from "../../hooks/useAiChatActions";
+import useAiChatStore from "../../store/useAiChatStore";
+import useShowToast from "../../hooks/useShowToast";
 
-export default function MessagesPage() {
+const MessagesPage = ({ authUser }) => {
+  const user=authUser.user?authUser.user:authUser
+  const userId = user._id;
+
+  const { fetchUserChats, removeUserChat, isLoading } = useAiChatActions();
+  const { userChats } = useAiChatStore();
   const navigate = useNavigate();
+  const showToast = useShowToast();
 
-  const conversations = [
-    { id: "chat123", title: "Product Inquiry", datetime: "2025-06-12 14:30" },
-    { id: "chat456", title: "Order Support", datetime: "2025-06-11 09:15" },
-    { id: "chat789", title: "Shipping Delay", datetime: "2025-06-10 16:00" },
-    { id: "chat101", title: "Billing Question", datetime: "2025-06-09 11:45" },
-  ];
+  useEffect(() => {
+    if (userId) {
+      fetchUserChats(userId);
+    }
+  }, [userId]);
 
-  const handleDelete = (chatId) => {
-    navigate(`/chat/${chatId}`);
+  const handleDelete = async (chatId) => {
+    try {
+      console.log(chatId)
+      await removeUserChat(userId,chatId);
+      showToast("Deleted", "Chat has been removed", "success");
+    } catch (err) {
+      showToast("Error", "Failed to delete chat", "error");
+    }
   };
 
   const handleOpenChat = (chatId) => {
@@ -42,48 +57,53 @@ export default function MessagesPage() {
         borderRadius="md"
         p={2}
       >
-        <VStack spacing={1} align="stretch">
-          {conversations.map((conv) => (
-            <Box
-              key={conv.id}
-              minH="40px" // reduced individual chat height
-              px={3}
-              py={1}
-              borderWidth="1px"
-              borderColor="gray.700"
-              borderRadius="md"
-              bg="gray.900"
-              _hover={{ bg: "gray.800", cursor: "pointer" }}
-              onClick={() => handleOpenChat(conv.id)}
-            >
-              <HStack>
-                <Text fontWeight="bold" noOfLines={1} fontSize="sm">
-                  {conv.title}
-                </Text>
-                <Spacer />
-                <IconButton
-                  icon={<DeleteIcon />}
-                  aria-label="Delete conversation"
-                  colorScheme="red"
-                  size="xs"
-                  onClick={(e) => {
-                    e.stopPropagation(); 
-                    handleDelete(conv.id);
-                  }}
-                />
-              </HStack>
-              <Text
-                fontSize="xs"
-                color="gray.400"
-                textAlign="right"
-                mt="1px"
+        {isLoading ? (
+          <Spinner color="white" />
+        ) : userChats.length === 0 ? (
+          <Text color="gray.400" textAlign="center">
+            No chats yet.
+          </Text>
+        ) : (
+          <VStack spacing={1} align="stretch">
+            {userChats.map((conv) => (
+              <Box
+                key={conv._id}
+                px={3}
+                py={1}
+                borderWidth="1px"
+                borderColor="gray.700"
+                borderRadius="md"
+                bg="gray.900"
+                _hover={{ bg: "gray.800", cursor: "pointer" }}
+                onClick={() => handleOpenChat(conv.chatId)}
               >
-                {conv.datetime}
-              </Text>
-            </Box>
-          ))}
-        </VStack>
+                <HStack>
+                  <Text fontWeight="bold" noOfLines={1} fontSize="sm">
+                    {conv.title || conv.latestMessage?.text?.slice(0, 25) || "Untitled Chat"}
+                  </Text>
+                  <Spacer />
+                  <IconButton
+                    icon={<DeleteIcon />}
+                    aria-label="Delete conversation"
+                    colorScheme="red"
+                    size="xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(conv.chatId);
+
+                    }}
+                  />
+                </HStack>
+                <Text fontSize="xs" color="gray.400" textAlign="right" mt="1px">
+                  {new Date(conv.createdAt).toLocaleString()}
+                </Text>
+              </Box>
+            ))}
+          </VStack>
+        )}
       </Box>
     </Box>
   );
-}
+};
+
+export default MessagesPage;

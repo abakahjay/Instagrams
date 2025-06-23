@@ -1,69 +1,164 @@
-import { Container, Flex, Link, Skeleton, SkeletonCircle, Text, VStack } from "@chakra-ui/react";
-import { useParams } from "react-router-dom";
-import ProfileHeader from "../../components/Profile/ProfileHeader";
-import ProfileTabs from "../../components/Profile/ProfileTabs";
-import ProfilePosts from "../../components/Profile/ProfilePosts";
-import { Link as RouterLink } from "react-router-dom";
+import {
+	Box,
+	Flex,
+	Text,
+	Avatar,
+	VStack,
+	HStack,
+	Divider,
+	Button,
+	useBreakpointValue,
+	Stack,
+	Link,
+	useDisclosure,
+} from "@chakra-ui/react";
+import { useParams, Link as RouterLink } from "react-router-dom";
+import { MdEmail, MdEdit } from "react-icons/md";
+import { FaGoogle } from "react-icons/fa";
 import { useGetUser } from "../../hooks/useGetUser";
+import { ProfileUrl } from "../../utils/imageUrl";
+import useAuthStore from "../../store/useAuthStore";
+import EditProfile from "../../components/Profile/EditProfile";
 
-
-
-export function ProfilePage ({authUser,onLogout}){
+export function ProfilePage({ authUser }) {
+	console.log("Auth User:", authUser);
+	const user=authUser.user?authUser.user:authUser
+	const url =user.profile_picture_id?ProfileUrl(user.profile_picture_id):'';
 	const { username } = useParams();
 	const { isLoading, userProfile } = useGetUser(username);
-	// console.log(userProfile);
-    
-	
-	const userNotFound = !isLoading && !userProfile;
-    const user=authUser?.user?authUser.user:authUser
-	if (userNotFound) return <UserNotFound />;
-	// console.log(user);
-	
-    return <Container maxW={'container.lg'} py={5}>
-            {/* Profile of {username } */}
-            <Flex py={10} px={4} pl={{ base: 4, md: 10 }} w={"full"} mx={"auto"} flexDirection={"column"}>
-                {!isLoading && userProfile &&<ProfileHeader  authUser={userProfile} onLogout={onLogout} username={username} owner={user?.username}/>}
-                {isLoading && <ProfileHeaderSkeleton />}
-            </Flex>
-            <Flex
-				px={{ base: 2, sm: 4 }}
-				maxW={"full"}
-				mx={"auto"}
-				borderTop={"1px solid"}
-				borderColor={"whiteAlpha.300"}
-				direction={"column"}
-			>
-				<ProfileTabs />
-				{userProfile&&<ProfilePosts user={userProfile.user}/>}
-			</Flex>
-        </Container>;
-};
+	console.log(userProfile)
+	const { isOpen, onOpen, onClose } = useDisclosure();
+	const isMobile = useBreakpointValue({ base: true, md: false });
+	const loggedInUser = useAuthStore((state) => state.user);
 
+	// Fallback: use authUser if no userProfile is fetched yet
+	const profile = userProfile || authUser;
+	const isOwnProfile = loggedInUser?.username === profile?.username;
+	if (!isLoading && !userProfile) return <UserNotFound />;
 
-const ProfileHeaderSkeleton = () => {
 	return (
-		<Flex
-			gap={{ base: 4, sm: 10 }}
-			py={10}
-			direction={{ base: "column", sm: "row" }}
-			justifyContent={"center"}
-			alignItems={"center"}
-		>
-			<SkeletonCircle size='24' />
+		<Flex direction="column" p={4} w="100%" maxW="900px" mx="auto" h="100vh">
+			<Box
+				bg="gray.900"
+				borderRadius="xl"
+				boxShadow="md"
+				p={isMobile ? 4 : 8}
+				w="100%"
+			>
+				<Flex justify="space-between" align="center" mb={6}>
+					<Text fontSize="2xl" fontWeight="bold">
+						Account
+					</Text>
+					{isOwnProfile && (
+						<Button
+							leftIcon={<MdEdit />}
+							size="sm"
+							variant="outline"
+							onClick={onOpen}
+						>
+							Update Profile
+						</Button>
+					)}
+				</Flex>
 
-			<VStack alignItems={{ base: "center", sm: "flex-start" }} gap={2} mx={"auto"} flex={1}>
-				<Skeleton height='12px' width='150px' />
-				<Skeleton height='12px' width='100px' />
-			</VStack>
+				<Stack
+					direction={{ base: "column", md: "row" }}
+					spacing={8}
+					align="flex-start"
+				>
+					{/* Sidebar */}
+					<VStack
+						align="flex-start"
+						spacing={4}
+						w={{ base: "100%", md: "200px" }}
+					>
+						<Text fontWeight="bold" fontSize="md">
+							Manage your account info.
+						</Text>
+						<Box>
+							<Text
+								fontWeight="medium"
+								color="blue.400"
+								borderLeft="3px solid white"
+								pl={2}
+							>
+								Profile
+							</Text>
+							<Text pl={2} mt={2} color="gray.400">
+								Security
+							</Text>
+						</Box>
+					</VStack>
+
+					{/* Profile Info */}
+					<Box flex={1}>
+						<Text fontSize="xl" fontWeight="semibold" mb={4}>
+							Profile details
+						</Text>
+
+						<HStack spacing={4} mb={4}>
+							<Avatar
+								size="lg"
+								name={user.fullname || user.username}
+								src={url}
+							/>
+							<Box>
+								<Text fontWeight="bold">
+									{user.firstName} {user.lastName}
+								</Text>
+								<Text fontSize="sm" color="gray.400">
+									@{user.username}
+								</Text>
+							</Box>
+						</HStack>
+
+						<Divider my={4} borderColor="gray.600" />
+
+						<Box mb={6}>
+							<Text fontSize="sm" color="gray.400" mb={1}>
+								Email addresses
+							</Text>
+							<HStack spacing={2}>
+								<MdEmail />
+								<Text fontSize="md">{user.email}</Text>
+								<Text fontSize="xs" color="gray.400">
+									Primary
+								</Text>
+							</HStack>
+						</Box>
+
+						<Divider my={4} borderColor="gray.600" />
+
+						<Box>
+							<Text fontSize="sm" color="gray.400" mb={1}>
+								Connected accounts
+							</Text>
+							<HStack spacing={2}>
+								<FaGoogle />
+								<Text fontSize="md">{user.email}</Text>
+							</HStack>
+						</Box>
+					</Box>
+				</Stack>
+			</Box>
+
+			{isOpen && <EditProfile isOpen={isOpen} onClose={onClose} />}
 		</Flex>
 	);
-};
+}
 
 const UserNotFound = () => {
 	return (
-		<Flex flexDir='column' textAlign={"center"} mx={"auto"}>
-			<Text fontSize={"2xl"}>User Not Found</Text>
-			<Link as={RouterLink} to={"/"} color={"blue.500"} w={"max-content"} mx={"auto"}>
+		<Flex flexDir="column" textAlign="center" mx="auto" mt={10}>
+			<Text fontSize="2xl">User Not Found</Text>
+			<Link
+				as={RouterLink}
+				to="/"
+				color="blue.500"
+				w="max-content"
+				mx="auto"
+				mt={2}
+			>
 				Go home
 			</Link>
 		</Flex>

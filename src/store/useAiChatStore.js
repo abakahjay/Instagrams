@@ -1,54 +1,63 @@
 import { create } from "zustand";
 
 const useAiChatStore = create((set) => ({
-    userChats: [],  // list of chat rooms or conversations
-    chats: [],      // list of messages in a selected conversation
+  userChats: [], // All chat rooms for the user
+  chats: [],     // Messages in selected chat
+  error: null,
 
-    // USER CHATS HANDLERS
-    setUserChats: (userChats) => set({ userChats }),
+  // USER CHAT HANDLERS
+  setUserChats: (userChats) => set({ userChats }),
 
-    addUserChat: (chat) => set((state) => ({
-        userChats: [chat, ...state.userChats],
+  addUserChat: (chat) =>
+    set((state) => ({
+      userChats: [chat, ...state.userChats],
     })),
 
-    deleteUserChat: (chatId) => set((state) => ({
-        userChats: state.userChats.filter((chat) => chat._id !== chatId),
+  deleteUserChat: (chatId) =>
+    set((state) => ({
+      userChats: state.userChats.filter((chat) => chat.chatId !== chatId),
     })),
 
-    updateUserChat: (updatedChat) => set((state) => ({
-        userChats: state.userChats.map((chat) =>
-            chat._id === updatedChat._id ? updatedChat : chat
-        ),
+  updateUserChat: (updatedChat) =>
+    set((state) => ({
+      userChats: state.userChats.map((chat) =>
+        chat.chatId === updatedChat.chatId ? updatedChat : chat
+      ),
     })),
 
-    // CHATS (MESSAGES) HANDLERS
-    setChats: (chats) => set({ chats }),
+  // CHAT MESSAGES HANDLERS
+  setChats: (chats) => set({ chats }),
 
-    addMessage: (message) => set((state) => ({
-        chats: [...state.chats, message],
+  addMessage: (message) =>
+    set((state) => ({
+      chats: [...state.chats, message],
     })),
 
-    deleteMessage: (messageId) => set((state) => ({
-        chats: state.chats.filter((msg) => msg._id !== messageId),
+  deleteMessage: (index) =>
+    set((state) => ({
+      chats: state.chats.filter((_, i) => i !== index),
     })),
 
-    updateMessage: (updatedMessage) => set((state) => ({
-        chats: state.chats.map((msg) =>
-            msg._id === updatedMessage._id ? updatedMessage : msg
-        ),
+  updateMessage: (index, updatedMessage) =>
+    set((state) => ({
+      chats: state.chats.map((msg, i) =>
+        i === index ? updatedMessage : msg
+      ),
     })),
+    setError: (error) => set({ error }),
 
-    // (OPTIONAL) add AI reply to a message thread (if you're threading replies)
-    addAiReply: (parentMessageId, aiReply) => set((state) => ({
-        chats: state.chats.map((msg) => {
-            if (msg._id === parentMessageId) {
-                return {
-                    ...msg,
-                    replies: [...(msg.replies || []), aiReply],
-                };
-            }
-            return msg;
-        }),
+  // Optional: For threaded replies (if used)
+  addAiReply: (parentIndex, aiReply) =>
+    set((state) => ({
+      chats: state.chats.map((msg, i) => {
+        if (i === parentIndex) {
+          return {
+            ...msg,
+            replies: [...(msg.replies || []), aiReply],
+          };
+        }
+        return msg;
+      }),
     })),
 }));
 
