@@ -26,6 +26,7 @@ import useShowToast from "../../hooks/useShowToast";
 import { useParams } from "react-router-dom";
 import useGetChat from "../../hooks/useGetChat";
 import useAddMessage from "../../hooks/useAddMessage";
+import useHandleMessageSend from "../../hooks/useHandleMessageSend";
 
 const ChatPage = ({authUser}) => {
   const [messages, setMessages] = useState([]);
@@ -46,7 +47,8 @@ const ChatPage = ({authUser}) => {
   const userId = user._id;
 
   const { isLoading,error, chats } = useGetChat(userId,chatId);
-  // const { isLoading2,error, chats } = useAddMessage(userId,chatId);
+  const { addMessage} = useAddMessage();
+  const { handleMessageSend } = useHandleMessageSend();
   
   // console.log(chats)
   // console.log(error)
@@ -117,7 +119,7 @@ const ChatPage = ({authUser}) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages,chats, isLoading]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim() && !imagePreview) return;
 
     const newMessages = [...messages];
@@ -146,12 +148,24 @@ const ChatPage = ({authUser}) => {
     setIsLoading(true);
 
     setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { text: "This is a response from AI.", fromUser: false },
-      ]);
-      setIsLoading(false);
+      // setMessages((prev) => [
+      //   ...prev,
+      //   { text: "This is a response from AI.", fromUser: false },
+      // ]);
     }, 1000);
+    // addMessage({userId,chatId,question:input.trim(),answer:'This is a response from AI.'})
+    try {
+    await handleMessageSend({
+      userId,
+      chatId,
+      prompt: input.trim() || "[image]",
+      file: imageFile,
+      text: input.trim(),
+    });
+  } catch (error) {
+    console.error("Failed to send message:", error);
+  }
+    setIsLoading(false);
   };
 
   const handleKeyDown = (e) => {

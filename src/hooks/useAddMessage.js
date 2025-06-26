@@ -10,7 +10,7 @@ const useAddMessage = () => {
   const addMessage = async ({ userId, chatId, question, answer }) => {
     try {
       const response = await API.patch(`/api/v1/ai/chats/${userId}/${chatId}`, {
-        body: JSON.stringify({ question, answer }),
+        question, answer
       });
 
       const messages = (response.data.data.history || []).map((msg) => {

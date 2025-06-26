@@ -21,19 +21,18 @@ import useAuthStore from "../../store/useAuthStore";
 import EditProfile from "../../components/Profile/EditProfile";
 
 export function ProfilePage({ authUser }) {
-	console.log("Auth User:", authUser);
+	// console.log("Auth User:", authUser);
 	const user=authUser.user?authUser.user:authUser
 	const url =user.profile_picture_id?ProfileUrl(user.profile_picture_id):'';
 	const { username } = useParams();
 	const { isLoading, userProfile } = useGetUser(username);
-	console.log(userProfile)
+	// console.log(userProfile)
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const isMobile = useBreakpointValue({ base: true, md: false });
-	const loggedInUser = useAuthStore((state) => state.user);
 
 	// Fallback: use authUser if no userProfile is fetched yet
 	const profile = userProfile || authUser;
-	const isOwnProfile = loggedInUser?.username === profile?.username;
+	const isOwnProfile = user.username === profile?.user?.username;
 	if (!isLoading && !userProfile) return <UserNotFound />;
 
 	return (
@@ -80,11 +79,12 @@ export function ProfilePage({ authUser }) {
 								fontWeight="medium"
 								color="blue.400"
 								borderLeft="3px solid white"
+								cursor={'pointer'}
 								pl={2}
 							>
 								Profile
 							</Text>
-							<Text pl={2} mt={2} color="gray.400">
+							<Text pl={2} mt={2} color="gray.400" cursor={'pointer'}>
 								Security
 							</Text>
 						</Box>
