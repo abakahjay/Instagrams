@@ -11,15 +11,53 @@ import { FaMicrophone } from "react-icons/fa";
 import { FiPlus } from "react-icons/fi";
 import { IoIosArrowRoundUp } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
-
+import useAiChatActions from "../../hooks/useAiChatActions";
+import useShowToast from "../../hooks/useShowToast";
+import useAuthStore from "../../store/useAuthStore.js";
+import useHandleMessageSend from "../../hooks/useHandleMessageSend";
 const Dashboard = () => {
   const [input, setInput] = useState("");
   const [fileInfo, setFileInfo] = useState(null);
   const [transcript, setTranscript] = useState("");
   const fileInputRef = useRef(null);
   const recognitionRef = useRef(null);
-  const navigate = useNavigate();
+    const authUser= useAuthStore(state=>state.user)
+    const { createUserChat } = useAiChatActions();
+    const showToast = useShowToast();
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+  
+    const user=authUser.user?authUser.user:authUser
+    const userId = user._id;
+    const { handleMessageSend } = useHandleMessageSend();
+    const handleNewChat = async (trimmed) => {
+      
+  
+      setLoading(true);
+  
+      try {
+        const chatData = { text: "New Chat" }; // or whatever shape your API expects
+        const newChat = await createUserChat(userId, chatData, true); // Pass true to return newChat
+        if (newChat?._id) {
+          console.log('New Chat')
 
+          // handleMessageSend({
+          //   userId,
+          //   chatId:newChat._id,
+          //   prompt: trimmed || "[image]",
+          //   file: imageFile,
+          //   text: trimmed,
+          // });
+          navigate(`/chat/${newChat._id}`);
+        }
+      } catch (err) {
+        showToast("Error", "Could not create chat", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+  
   const handleSend = () => {
     const trimmed = input.trim();
     if (!trimmed && !fileInfo) return;
@@ -32,10 +70,10 @@ const Dashboard = () => {
       localStorage.setItem("fileInfo", JSON.stringify(fileInfo));
     }
 
+    handleNewChat(trimmed)
     setInput("");
     setTranscript("");
     setFileInfo(null);
-    navigate("/chat");
   };
 
   const handleFileChange = (e) => {

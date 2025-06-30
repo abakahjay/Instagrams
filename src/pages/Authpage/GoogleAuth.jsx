@@ -5,13 +5,14 @@ import useAuthStore from "../../store/useAuthStore"; // Import your Zustand stor
 
 const GoogleAuth = ({ prefix }) => {
 	const [error, setError] = useState(null);
+	const apiUrl = import.meta.env.VITE_API_URL
 	const showToast = useShowToast();
 	const loginUser = useAuthStore((state) => state.loginUser); // Get the login action from Zustand store
 
 	const handleGoogleAuth = async () => {
 		try {
 			// Redirect to your backend authentication endpoint
-			window.location.href = "http://localhost:7004/api/v1/auth/google";
+			window.location.href = `${apiUrl}/api/v1/auth/google`;
 		} catch (err) {
 			setError(err.message);
 			showToast("Error", err.message, "error");

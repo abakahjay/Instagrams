@@ -7,7 +7,7 @@ const useHandleMessageSend = () => {
     const showToast = useShowToast();
     const { addMessage } = useAddMessage();
     const { addImageMessage } = useAddImageMessage();
-
+    console.log('Starting')
     const handleMessageSend = async ({
         userId,
         chatId,
@@ -20,21 +20,22 @@ const useHandleMessageSend = () => {
             const response = await API.post("/api/v1/ai/ask", { prompt });
             // console.log(response)
 
-            const answer = response?.data?.response;
-            if (!answer) {  
+            const answer = response?.data?.response;;
+            if (!answer) {
                 throw new Error("Server Error");
             }
             // console.log(answer)
 
             // 🔹 Step 2: Add to DB
+            // console.log(answer)
             if (file) {
-                await addImageMessage({ userId, chatId, imageFile: file, text });
+                await addImageMessage({ userId, chatId, imageFile: file, text ,responses:answer});
             } else {
                 await addMessage({ userId, chatId, question: prompt, answer });
             }
         } catch (err) {
             const message =
-                err.response?.data?.error || "Failed to send message to AI";
+                err?.response?.data?.error || "Failed to send message to AI";
             showToast("Error", message, "error");
         }
     };

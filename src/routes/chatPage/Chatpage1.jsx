@@ -36,7 +36,7 @@ const ChatPage = ({authUser}) => {
   const [editingText, setEditingText] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [isLoadings, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const isMobile = useBreakpointValue({ base: true, md: false });
@@ -46,9 +46,9 @@ const ChatPage = ({authUser}) => {
   const user=authUser.user?authUser.user:authUser
   const userId = user._id;
 
-  const { isLoading,error, chats } = useGetChat(userId,chatId);
+  const { error, chats } = useGetChat(userId,chatId);
   const { addMessage} = useAddMessage();
-  const { handleMessageSend } = useHandleMessageSend();
+  const { handleMessageSend } = useHandleMessageSend(); 
   
   // console.log(chats)
   // console.log(error)
@@ -56,6 +56,7 @@ const ChatPage = ({authUser}) => {
 
   // Auto-scroll and initial load
   useEffect(() => {
+    setIsLoading(true);
     const firstMessage = localStorage.getItem("dashboardMessage");
     const fileInfoRaw = localStorage.getItem("fileInfo");
 
@@ -63,9 +64,17 @@ const ChatPage = ({authUser}) => {
 
     const newMessages = [];
     let hasUserInput = false;
-
+    setIsLoading(true);
     if (firstMessage) {
       newMessages.push({ text: firstMessage, fromUser: true });
+      setIsLoading(true);
+      handleMessageSend({
+        userId,
+        chatId,
+        prompt: firstMessage || "[image]",
+        file: imageFile,
+        text: input.trim(),
+      });
       localStorage.removeItem("dashboardMessage");
       hasUserInput = true;
     }
@@ -103,16 +112,17 @@ const ChatPage = ({authUser}) => {
       setMessages(newMessages);
     }
 
-    if (hasUserInput) {
-      setIsLoading(true);
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          { text: "This is a response from AI.", fromUser: false },
-        ]);
-        setIsLoading(false);
-      }, 1000);
-    }
+    // if (hasUserInput) {
+    //   setIsLoading(true);
+    //   setTimeout(() => {
+    //     setMessages((prev) => [
+    //       ...prev,
+    //       { text: "This is a response from AI.", fromUser: false },
+    //     ]);
+    //     setIsLoading(false);
+    //   }, 1000);
+    // }
+    setIsLoading(false);
   }, [chats]);
 
   useEffect(() => {

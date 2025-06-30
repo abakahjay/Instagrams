@@ -8,11 +8,13 @@ const useAddImageMessage = () => {
     const { setChats, setError } = useAiChatStore();
     const apiUrl = import.meta.env.VITE_API_URL;
 
-    const addImageMessage = async ({ userId, chatId, imageFile, text = "" }) => {
+    const addImageMessage = async ({ userId, chatId, imageFile, text = "" ,responses}) => {
         try {
+            console.log('response:',responses)
             const formData = new FormData();
             formData.append("file", imageFile);
             formData.append("text", text); // Optional caption
+            formData.append("response", responses); // Optional caption
 
             const response = await API.post(
                 `/api/v1/ai/upload/${userId}/${chatId}`,
