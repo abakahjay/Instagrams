@@ -168,7 +168,7 @@ const ChatPage = ({authUser}) => {
     await handleMessageSend({
       userId,
       chatId,
-      prompt: input.trim() || "[image]",
+      prompt: input.trim() || null,
       file: imageFile,
       text: input.trim(),
     });

@@ -16,6 +16,7 @@ import Try1 from "./components/test/Try1.jsx";
 import Homepage from "./routes/homePage/Homepage.jsx"
 import Dashboard from "./routes/dashboardPage/Dashboard.jsx";
 import ChatPage from "./routes/chatPage/Chatpage1.jsx";
+import Control from "./pages/ControlElectrical/Control.jsx";
 
 export default function App(){
     const showToast = useShowToast()
@@ -134,6 +135,13 @@ export default function App(){
             path: '/',
             element: (
                     <Homepage authUser={authUser} onLogout={handleLogout} />
+            ),
+        },
+        ,
+        {
+            path: '/control',
+            element: (
+                    <Control authUser={authUser} onLogout={handleLogout} />
             ),
         },
     ]);
