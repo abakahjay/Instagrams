@@ -39,7 +39,7 @@ const Dashboard = () => {
         const chatData = { text: "New Chat" }; // or whatever shape your API expects
         const newChat = await createUserChat(userId, chatData, true); // Pass true to return newChat
         if (newChat?._id) {
-          console.log('New Chat')
+          // console.log('New Chat')
 
           // handleMessageSend({
           //   userId,

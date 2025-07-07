@@ -2,13 +2,16 @@ import API from "../utils/api";
 import useShowToast from "./useShowToast";
 import useAddMessage from "./useAddMessage";
 import useAddImageMessage from "./useAddImageMessage";
+import { useState} from "react";
+
 
 const useHandleMessageSend = () => {
     const formData = new FormData();
+    const [loading, setLoading] = useState(false);
     const showToast = useShowToast();
     const { addMessage } = useAddMessage();
     const { addImageMessage } = useAddImageMessage();
-    console.log('Starting')
+    // console.log('Starting')
  const handleMessageSend = async ({
     userId,
     chatId,
@@ -17,6 +20,7 @@ const useHandleMessageSend = () => {
     text = "", // optional caption
 }) => {
     try {
+        setLoading(true);
         let answer;
 
         if (file) {
@@ -47,12 +51,16 @@ const useHandleMessageSend = () => {
         } else {
             await addMessage({ userId, chatId, question: prompt, answer });
         }
+        setLoading(false);
 
     } catch (err) {
         const message =
             err?.response?.data?.error || "Failed to send message to AI";
         showToast("Error", message, "error");
+        setLoading(false);
     }
+    console.log(loading)
+    return {loading}
 };
 
     return { handleMessageSend };

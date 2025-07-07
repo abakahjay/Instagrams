@@ -65,16 +65,19 @@ const ChatPage = ({authUser}) => {
     const newMessages = [];
     let hasUserInput = false;
     setIsLoading(true);
-    if (firstMessage) {
+    // console.log(!fileInfoRaw)
+    if (!fileInfoRaw &&firstMessage) {
+      // console.log('None')
       newMessages.push({ text: firstMessage, fromUser: true });
       setIsLoading(true);
-      handleMessageSend({
+      const {loading}=handleMessageSend({
         userId,
         chatId,
-        prompt: firstMessage || "[image]",
+        prompt: firstMessage,
         file: imageFile,
         text: input.trim(),
       });
+      console.log(loading)
       localStorage.removeItem("dashboardMessage");
       hasUserInput = true;
     }
@@ -94,16 +97,38 @@ const ChatPage = ({authUser}) => {
             fromUser: true,
           });
 
-          setImageFile({
-            name: fileInfo.name,
-            type: fileInfo.type,
-            size: parseFloat(fileInfo.size),
-          });
+          const byteString = atob(fileInfo.base64.split(',')[1]);
+          const mimeString = fileInfo.type;
+          const ab = new ArrayBuffer(byteString.length);
+          const ia = new Uint8Array(ab);
+          for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+          }
+          const blob = new Blob([ab], { type: mimeString });
+          const file = new File([blob], fileInfo.name, { type: mimeString });
+
+          setImageFile(file);
+          // console.log(file)
 
           hasUserInput = true;
+          const sendPic=async ()=>{
+            await handleMessageSend({
+              userId,
+              chatId,
+              prompt: firstMessage||null,
+              file: file,
+              text: firstMessage,
+            });
+            // console.log(imageFile)
+            // console.log(fileInfo)
+            // setImageFile(null);
+          }
+          sendPic()
+            
         }
 
         localStorage.removeItem("fileInfo");
+        localStorage.removeItem("dashboardMessage");
       } catch (err) {
         console.error("Invalid file info in localStorage", err);
       }
@@ -134,7 +159,7 @@ const ChatPage = ({authUser}) => {
     if (!input.trim() && !imagePreview) return;
 
     const newMessages = [...messages];
-    console.log(chats)
+    // console.log(chats)
 
     if (input.trim()) {
       newMessages.push({ text: input.trim(), fromUser: true });
@@ -188,6 +213,7 @@ const ChatPage = ({authUser}) => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+    // console.log(file)
     if (file && file.type.startsWith("image/")) {
       setImageFile(file);
       const reader = new FileReader();

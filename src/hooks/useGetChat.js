@@ -44,9 +44,11 @@ const useGetChat = (userId, chatId) => {
         showToast("Success", `Chat: ${chatId} Found successful`, "success");
       } catch (err) {
         console.log(err)
-        const message = err.response?.data?.error || "Chat not found";
+        const message = err.response?.data?.error||err.message;
         setError(message); // Update Zustand error state
-        showToast("Error", message, "error");
+        if(message&&message!=='canceled'){
+          showToast("Error", message, "error");
+        }
 
       } finally {
         setLoading(false); // Reset loading state
