@@ -83,6 +83,7 @@ const ChatPage = ({authUser}) => {
       try {
         const fileInfo = JSON.parse(fileInfoRaw);
         if (fileInfo.base64 && fileInfo.type.startsWith("image/")) {
+          console.log('Hello the if statement works')
           newMessages.push({
             image: fileInfo.base64,
             fileInfo: {
