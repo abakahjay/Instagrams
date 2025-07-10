@@ -32,7 +32,7 @@ const MessagesPage = ({ authUser }) => {
 
   const handleDelete = async (chatId) => {
     try {
-      console.log(chatId)
+      // console.log(chatId)
       await removeUserChat(userId,chatId);
       showToast("Deleted", "Chat has been removed", "success");
     } catch (err) {

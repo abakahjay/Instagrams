@@ -412,10 +412,10 @@ export const ChatGptLogo1 = (props) => (
 export const HistoryLogo = (props) => {
 	return <>
 		<svg width="24" height="24" viewBox="0 0 48 48" fill="none" {...props}>
-			<rect width="48px" height="48px" fill="none" fillopacity="0.01" />
-			<path d="M5.81824 6.72729V14H13.091" stroke="rgb(245, 245, 245)" strokeWidth={3} strokelinecap="round" strokelinejoin="round" />
-			<path d="M4 24C4 35.0457 12.9543 44 24 44V44C35.0457 44 44 35.0457 44 24C44 12.9543 35.0457 4 24 4C16.598 4 10.1351 8.02111 6.67677 13.9981" stroke="rgb(245, 245, 245)" strokeWidth={3} strokelinecap="round" strokelinejoin="round" />
-			<path d="M24.005 12L24.0038 24.0088L32.4832 32.4882" stroke="rgb(245, 245, 245)" strokeWidth={3} strokelinecap="round" strokelinejoin="round" />
+			<rect width="48px" height="48px" fill="none" fillOpacity="0.01" />
+			<path d="M5.81824 6.72729V14H13.091" stroke="rgb(245, 245, 245)" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+			<path d="M4 24C4 35.0457 12.9543 44 24 44V44C35.0457 44 44 35.0457 44 24C44 12.9543 35.0457 4 24 4C16.598 4 10.1351 8.02111 6.67677 13.9981" stroke="rgb(245, 245, 245)" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
+			<path d="M24.005 12L24.0038 24.0088L32.4832 32.4882" stroke="rgb(245, 245, 245)" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
 		</svg>
 	</>
 }

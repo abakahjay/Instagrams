@@ -21,7 +21,7 @@ const SidebarItems = ({authUser,onLogout}) => {
 			<MicLogo/>
 			<ArrowDropLogo/> */}
 			<NewChat/>
-			<SearchChats/>
+			<SearchChats authUser={authUser}/>
 			<HistoryLink/>
 			{/* <Home authUser={authUser} onLogout={onLogout} />
 			<Search authUser={authUser} onLogout={onLogout}/>
