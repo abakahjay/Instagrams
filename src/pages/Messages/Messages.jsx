@@ -65,7 +65,7 @@ const MessagesPage = ({ authUser }) => {
           </Text>
         ) : (
           <VStack spacing={1} align="stretch">
-            {userChats.map((conv) => (
+          {[...userChats].reverse().map((conv) => (
               <Box
                 key={conv._id}
                 px={3}

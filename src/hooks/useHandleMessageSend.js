@@ -1,69 +1,68 @@
-import API from "../utils/api";
-import useShowToast from "./useShowToast";
-import useAddMessage from "./useAddMessage";
-import useAddImageMessage from "./useAddImageMessage";
-import { useState} from "react";
+        import API from "../utils/api";
+        import useShowToast from "./useShowToast";
+        import useAddMessage from "./useAddMessage";
+        import useAddImageMessage from "./useAddImageMessage";
+        import { useState} from "react";
 
 
-const useHandleMessageSend = () => {
-    const formData = new FormData();
-    const [loading, setLoading] = useState(false);
-    const showToast = useShowToast();
-    const { addMessage } = useAddMessage();
-    const { addImageMessage } = useAddImageMessage();
-    // console.log('Starting')
- const handleMessageSend = async ({
-    userId,
-    chatId,
-    prompt,
-    file, // optional image file
-    text = "", // optional caption
-}) => {
-    try {
-        setLoading(true);
-        let answer;
-
-        if (file) {
+        const useHandleMessageSend = () => {
             const formData = new FormData();
-            formData.append("prompt", prompt);
-            formData.append("image", file); // ✅ real File object
-            formData.append("text", text);  // optional
+            const [loading, setLoading] = useState(false);
+            const showToast = useShowToast();
+            const { addMessage } = useAddMessage();
+            const { addImageMessage } = useAddImageMessage();
+            // console.log('Starting')
+        const handleMessageSend = async ({
+            userId,
+            chatId,
+            prompt,
+            file, // optional image file
+            text = "", // optional caption
+        }) => {
+            try {
+                setLoading(true);
+                let answer;
 
-            const response = await API.post("/api/v1/ai/ask", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
+                if (file) {
+                    const formData = new FormData();
+                    formData.append("prompt", prompt);
+                    formData.append("image", file); // ✅ real File object
+                    formData.append("text", text);  // optional
 
-            answer = response?.data?.response;
-        } else {
-            const response = await API.post("/api/v1/ai/ask", { prompt });
-            answer = response?.data?.response;
-        }
+                    const response = await API.post("/api/v1/ai/ask", formData, {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
+                    });
 
-        if (!answer) {
-            throw new Error("Server Error");
-        }
+                    answer = response?.data?.response;
+                } else {
+                    const response = await API.post("/api/v1/ai/ask", { prompt });
+                    answer = response?.data?.response;
+                }
 
-        // ✅ Save to your DB — only now
-        if (file) {
-            await addImageMessage({ userId, chatId, imageFile: file, text, responses: answer });
-        } else {
-            await addMessage({ userId, chatId, question: prompt, answer });
-        }
-        setLoading(false);
+                if (!answer) {
+                    throw new Error("Server Error");
+                }
 
-    } catch (err) {
-        const message =
-            err?.response?.data?.error || "Failed to send message to AI";
-        showToast("Error", message, "error");
-        setLoading(false);
-    }
-    console.log(loading)
-    return {loading}
-};
+                // ✅ Save to your DB — only now
+                if (file) {
+                    await addImageMessage({ userId, chatId, imageFile: file, text, responses: answer });
+                } else {
+                    await addMessage({ userId, chatId, question: prompt, answer });
+                }
 
-    return { handleMessageSend };
-};
+            } catch (err) {
+                const message =
+                    err?.response?.data?.error || "Failed to send message to AI";
+                showToast("Error", message, "error");
+                setLoading(false);
+            }finally {
+                setLoading(false);
+            }
+        };
 
-export default useHandleMessageSend;
+            return { handleMessageSend,loading };
+        };
+
+        export default useHandleMessageSend;

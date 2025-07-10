@@ -10,6 +10,7 @@ import {
   Spinner,
   Text,
   HStack,
+  Button,
 } from "@chakra-ui/react";
 import {
   FaMicrophone,
@@ -42,17 +43,15 @@ const ChatPage = ({authUser}) => {
   const isMobile = useBreakpointValue({ base: true, md: false });
   const showToast = useShowToast();
   const recognitionRef = useRef(null);
+  const [transcript, setTranscript] = useState("");
+
   const { chatId } = useParams();
   const user=authUser.user?authUser.user:authUser
   const userId = user._id;
 
   const { error, chats } = useGetChat(userId,chatId);
   const { addMessage} = useAddMessage();
-  const { handleMessageSend } = useHandleMessageSend(); 
-  
-  // console.log(chats)
-  // console.log(error)
-  // console.log(chatId)
+  const { handleMessageSend,loading } = useHandleMessageSend(); 
 
   // Auto-scroll and initial load
   useEffect(() => {
@@ -64,20 +63,15 @@ const ChatPage = ({authUser}) => {
 
     const newMessages = [];
     let hasUserInput = false;
-    setIsLoading(true);
-    // console.log(!fileInfoRaw)
     if (!fileInfoRaw &&firstMessage) {
-      // console.log('None')
       newMessages.push({ text: firstMessage, fromUser: true });
-      setIsLoading(true);
-      const {loading}=handleMessageSend({
+      handleMessageSend({
         userId,
         chatId,
         prompt: firstMessage,
         file: imageFile,
         text: input.trim(),
       });
-      console.log(loading)
       localStorage.removeItem("dashboardMessage");
       hasUserInput = true;
     }
@@ -96,7 +90,6 @@ const ChatPage = ({authUser}) => {
             },
             fromUser: true,
           });
-
           const byteString = atob(fileInfo.base64.split(',')[1]);
           const mimeString = fileInfo.type;
           const ab = new ArrayBuffer(byteString.length);
@@ -106,10 +99,7 @@ const ChatPage = ({authUser}) => {
           }
           const blob = new Blob([ab], { type: mimeString });
           const file = new File([blob], fileInfo.name, { type: mimeString });
-
           setImageFile(file);
-          // console.log(file)
-
           hasUserInput = true;
           const sendPic=async ()=>{
             await handleMessageSend({
@@ -119,14 +109,9 @@ const ChatPage = ({authUser}) => {
               file: file,
               text: firstMessage,
             });
-            // console.log(imageFile)
-            // console.log(fileInfo)
-            // setImageFile(null);
           }
           sendPic()
-            
         }
-
         localStorage.removeItem("fileInfo");
         localStorage.removeItem("dashboardMessage");
       } catch (err) {
@@ -137,17 +122,6 @@ const ChatPage = ({authUser}) => {
     if (newMessages.length > 0) {
       setMessages(newMessages);
     }
-
-    // if (hasUserInput) {
-    //   setIsLoading(true);
-    //   setTimeout(() => {
-    //     setMessages((prev) => [
-    //       ...prev,
-    //       { text: "This is a response from AI.", fromUser: false },
-    //     ]);
-    //     setIsLoading(false);
-    //   }, 1000);
-    // }
     setIsLoading(false);
   }, [chats]);
 
@@ -157,10 +131,7 @@ const ChatPage = ({authUser}) => {
 
   const handleSend = async () => {
     if (!input.trim() && !imagePreview) return;
-
     const newMessages = [...messages];
-    // console.log(chats)
-
     if (input.trim()) {
       newMessages.push({ text: input.trim(), fromUser: true });
     }
@@ -178,18 +149,9 @@ const ChatPage = ({authUser}) => {
       setImagePreview(null);
       setImageFile(null);
     }
-
     setMessages(newMessages);
     setInput("");
     setIsLoading(true);
-
-    setTimeout(() => {
-      // setMessages((prev) => [
-      //   ...prev,
-      //   { text: "This is a response from AI.", fromUser: false },
-      // ]);
-    }, 1000);
-    // addMessage({userId,chatId,question:input.trim(),answer:'This is a response from AI.'})
     try {
     await handleMessageSend({
       userId,
@@ -213,7 +175,6 @@ const ChatPage = ({authUser}) => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    // console.log(file)
     if (file && file.type.startsWith("image/")) {
       setImageFile(file);
       const reader = new FileReader();
@@ -256,6 +217,37 @@ const ChatPage = ({authUser}) => {
     utterance.lang = "en-US";
     speechSynthesis.speak(utterance);
   };
+  const startListening = () => {
+  if (!("webkitSpeechRecognition" in window)) {
+    alert("Speech recognition not supported in this browser.");
+    return;
+  }
+
+  const recognition = new window.webkitSpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = (event) => {
+    const result = event.results[0][0].transcript;
+    setTranscript(result);
+  };
+
+  recognitionRef.current = recognition;
+  recognition.start();
+};
+
+const stopListening = () => {
+  recognitionRef.current?.stop();
+  setInput(transcript);
+  setTranscript("");
+};
+
+const cancelListening = () => {
+  recognitionRef.current?.abort();
+  setTranscript("");
+};
+
 
   return (
     <Flex direction="column" h="100vh" bg="#000" color="white">
@@ -380,7 +372,7 @@ const ChatPage = ({authUser}) => {
             </Box>
           ))}
 
-          {isLoading && (
+          {(loading) && (
             <Box mb={2}>
               <Spinner size="sm" color="gray.400" />
             </Box>
@@ -442,6 +434,40 @@ const ChatPage = ({authUser}) => {
             _hover={{ bg: "gray.700" }}
             onClick={() => fileInputRef.current.click()}
           />
+          {transcript && (
+              <Flex
+                justify="space-between"
+                align="center"
+                bg="gray.700"
+                px={3}
+                py={2}
+                borderRadius="md"
+                mb={3}
+                color="white"
+                fontSize="sm"
+                wrap="wrap"
+              >
+                <Text flex="1">{transcript}</Text>
+                <Button
+                  size="sm"
+                  colorScheme="green"
+                  borderRadius="full"
+                  mr={2}
+                  onClick={stopListening}
+                >
+                  Correct
+                </Button>
+                <Button
+                  size="sm"
+                  colorScheme="red"
+                  borderRadius="full"
+                  onClick={cancelListening}
+                >
+                  Close
+                </Button>
+              </Flex>
+            )}
+
 
           <Textarea
             placeholder="Type your message..."
@@ -472,7 +498,7 @@ const ChatPage = ({authUser}) => {
             aria-label="Mic"
             color="gray.400"
             _hover={{ bg: "gray.700" }}
-            onClick={() => showToast("Mic", "You can add mic logic here", "info")}
+            onClick={startListening}
           />
 
           <IconButton
@@ -496,222 +522,3 @@ const ChatPage = ({authUser}) => {
 };
 
 export default ChatPage;
-
-
-// import React, { useState, useEffect, useRef } from "react";
-// import {
-//   Box, Flex, Textarea, IconButton, VStack,
-//   useBreakpointValue, Image, Spinner, Text, HStack
-// } from "@chakra-ui/react";
-// import { FaMicrophone, FaRegImage } from "react-icons/fa";
-// import { IoIosArrowUp } from "react-icons/io";
-// import { MdContentCopy, MdDeleteOutline, MdEdit } from "react-icons/md";
-// import useShowToast from "../../hooks/useShowToast";
-// import useAiChatActions from "../../hooks/useAiChatActions";
-
-// const ChatPage = ({ authUser }) => {
-//   const user=authUser.user?authUser.user:authUser
-//   const userId = user._id;
-//   const showToast = useShowToast();
-
-//   const {
-//     createUserChat,
-//     sendMessage,
-//     uploadImage,
-//     fetchChatMessages,
-//     addMessage,
-//     setChats
-//   } = useAiChatActions();
-
-//   const [chatId, setChatId] = useState(null);
-//   const [messages, setMessages] = useState([]);
-//   const [hoveredIndex, setHoveredIndex] = useState(null);
-//   const [input, setInput] = useState("");
-//   const [editingIndex, setEditingIndex] = useState(null);
-//   const [editingText, setEditingText] = useState("");
-//   const [imageFile, setImageFile] = useState(null);
-//   const [imagePreview, setImagePreview] = useState(null);
-//   const [isLoading, setIsLoading] = useState(false);
-
-//   const fileInputRef = useRef(null);
-//   const messagesEndRef = useRef(null);
-//   const isMobile = useBreakpointValue({ base: true, md: false });
-
-//   useEffect(() => {
-//     // If entered via existing chat URL, you can fetch messages here
-//     // Example: if chatId prop or param exists...
-//   }, []);
-
-//   useEffect(() => {
-//     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-//   }, [messages, isLoading]);
-
-//   const handleSend = async () => {
-//     if (!input.trim() && !imagePreview) return;
-//     setIsLoading(true);
-
-//     try {
-//       let currentChatId = chatId;
-//       if (!currentChatId) {
-//         const res = await createUserChat(userId, { text: input || "Image Upload" });
-//         currentChatId = res.savedChat._id;
-//         setChatId(currentChatId);
-//       }
-
-//       if (input.trim()) {
-//         await sendMessage(userId, currentChatId, input.trim());
-//         const newMsg = { text: input.trim(), fromUser: true };
-//         setMessages((prev) => [...prev, newMsg]);
-//       }
-
-//       if (imageFile) {
-//         const formData = new FormData();
-//         formData.append("file", imageFile);
-//         formData.append("text", input.trim());
-//         await uploadImage(userId, currentChatId, formData);
-
-//         const imgMsg = {
-//           image: imagePreview,
-//           fromUser: true,
-//           fileInfo: {
-//             name: imageFile.name,
-//             type: imageFile.type,
-//             size: (imageFile.size / 1024).toFixed(1) + " KB",
-//           },
-//         };
-//         setMessages((prev) => [...prev, imgMsg]);
-//       }
-
-//       setInput("");
-//       setImageFile(null);
-//       setImagePreview(null);
-//     } catch (err) {
-//       showToast("Error", err.message || "Failed to send", "error");
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };
-
-//   const handleFileChange = (e) => {
-//     const file = e.target.files[0];
-//     if (!file || !file.type.startsWith("image/")) {
-//       return showToast("Error", "Please upload a valid image", "error");
-//     }
-
-//     setImageFile(file);
-//     const reader = new FileReader();
-//     reader.onload = () => setImagePreview(reader.result);
-//     reader.readAsDataURL(file);
-//     e.target.value = "";
-//   };
-
-//   const handleCopy = (text) => {
-//     navigator.clipboard.writeText(text);
-//     showToast("Copied", "Message copied", "success");
-//   };
-
-//   const handleDelete = (idx) => {
-//     setMessages((prev) => prev.filter((_, i) => i !== idx));
-//   };
-
-//   const handleEdit = (idx) => {
-//     setEditingIndex(idx);
-//     setEditingText(messages[idx].text || "");
-//   };
-
-//   const handleSaveEdit = () => {
-//     setMessages((prev) =>
-//       prev.map((msg, i) =>
-//         i === editingIndex ? { ...msg, text: editingText } : msg
-//       )
-//     );
-//     setEditingIndex(null);
-//     setEditingText("");
-//     showToast("Updated", "Message updated", "success");
-//   };
-
-//   return (
-//     <Flex direction="column" h="100vh" bg="#000" color="white">
-//       <VStack p={4} flex={1} overflowY="auto" align="center">
-//         <Box w="100%" maxW={{ base: "100%", md: "75%" }}>
-//           {messages.map((msg, idx) => (
-//             <Box key={idx} onMouseEnter={() => setHoveredIndex(idx)} onMouseLeave={() => setHoveredIndex(null)} mb={2}>
-//               <Flex justify={msg.fromUser ? "flex-end" : "flex-start"}>
-//                 <Box bg={msg.fromUser ? "blue.600" : "gray.700"} px={4} py={2} borderRadius="xl" fontSize={isMobile ? "sm" : "md"} maxW="80%" wordBreak="break-word" whiteSpace="pre-wrap">
-//                   {editingIndex === idx ? (
-//                     <Textarea
-//                       size="sm"
-//                       value={editingText}
-//                       onChange={(e) => setEditingText(e.target.value)}
-//                       bg="gray.800"
-//                       color="white"
-//                       border="1px solid white"
-//                     />
-//                   ) : (
-//                     <>
-//                       {msg.text}
-//                       {msg.image && (
-//                         <>
-//                           <Image src={msg.image} alt="upload" mt={2} borderRadius="md" maxH="200px" />
-//                           {msg.fileInfo && (
-//                             <Text fontSize="xs" mt={1}>
-//                               {msg.fileInfo.name} • {msg.fileInfo.type} • {msg.fileInfo.size}
-//                             </Text>
-//                           )}
-//                         </>
-//                       )}
-//                     </>
-//                   )}
-//                 </Box>
-//               </Flex>
-
-//               {hoveredIndex === idx && (
-//                 <HStack justify={msg.fromUser ? "flex-end" : "flex-start"} spacing={2} mt={1}>
-//                   <IconButton icon={<MdContentCopy />} size="xs" variant="ghost" onClick={() => handleCopy(msg.text || "")} />
-//                   {msg.fromUser && editingIndex !== idx && (
-//                     <IconButton icon={<MdEdit />} size="xs" variant="ghost" onClick={() => handleEdit(idx)} />
-//                   )}
-//                   {msg.fromUser && editingIndex === idx && (
-//                     <IconButton icon={<IoIosArrowUp />} size="xs" variant="ghost" onClick={handleSaveEdit} />
-//                   )}
-//                   <IconButton icon={<MdDeleteOutline />} size="xs" variant="ghost" onClick={() => handleDelete(idx)} />
-//                 </HStack>
-//               )}
-//             </Box>
-//           ))}
-//           {isLoading && <Spinner color="gray.400" />}
-//           <div ref={messagesEndRef} />
-//         </Box>
-//       </VStack>
-
-//       {imagePreview && (
-//         <Box p={2} bg="gray.800">
-//           <Image src={imagePreview} alt="preview" borderRadius="md" maxH="150px" mb={1} />
-//           {imageFile && <Text fontSize="xs">{imageFile.name} • {imageFile.type} • {(imageFile.size / 1024).toFixed(1)} KB</Text>}
-//         </Box>
-//       )}
-
-//       <Box p={3} borderTop="1px solid #333" bg="#000">
-//         <Flex align="center" bg="gray.800" borderRadius="lg" px={3} py={2} gap={2}>
-//           <input type="file" hidden ref={fileInputRef} onChange={handleFileChange} />
-//           <IconButton icon={<FaRegImage />} variant="ghost" aria-label="Upload Image" onClick={() => fileInputRef.current.click()} />
-//           <Textarea
-//             placeholder="Type your message..."
-//             value={input}
-//             onChange={(e) => setInput(e.target.value)}
-//             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-//             resize="none"
-//             maxHeight="120px"
-//             bg="transparent"
-//             flex={1}
-//             _focus={{ borderColor: "white" }}
-//           />
-//           <IconButton icon={<FaMicrophone />} variant="ghost" aria-label="Mic" />
-//           <IconButton icon={<IoIosArrowUp />} isRound aria-label="Send" onClick={handleSend} bg={input.trim() || imagePreview ? "white" : "transparent"} />
-//         </Flex>
-//       </Box>
-//     </Flex>
-//   );
-// };
-
-// export default ChatPage;
