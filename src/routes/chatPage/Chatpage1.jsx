@@ -32,7 +32,7 @@ import useDeleteMessage from "../../hooks/useDeleteMessage";
 import useEditMessage from "../../hooks/useEditMessage";
 
 
-const ChatPage = ({authUser}) => {
+const ChatPage = ({ authUser }) => {
   const [messages, setMessages] = useState([]);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [input, setInput] = useState("");
@@ -51,13 +51,13 @@ const ChatPage = ({authUser}) => {
 
 
   const { chatId } = useParams();
-  const user=authUser.user?authUser.user:authUser
+  const user = authUser.user ? authUser.user : authUser
   const userId = user._id;
 
-  const { error, chats } = useGetChat(userId,chatId);
-  const { addMessage} = useAddMessage();
-  const { handleMessageSend,loading } = useHandleMessageSend();
-  const { handleMessageDelete,loadingg } = useDeleteMessage();
+  const { error, chats } = useGetChat(userId, chatId);
+  const { addMessage } = useAddMessage();
+  const { handleMessageSend, loading } = useHandleMessageSend();
+  const { handleMessageDelete, loadingg } = useDeleteMessage();
 
   // Auto-scroll and initial load
   useEffect(() => {
@@ -69,7 +69,7 @@ const ChatPage = ({authUser}) => {
 
     const newMessages = [];
     let hasUserInput = false;
-    if (!fileInfoRaw &&firstMessage) {
+    if (!fileInfoRaw && firstMessage) {
       newMessages.push({ text: firstMessage, fromUser: true });
       handleMessageSend({
         userId,
@@ -107,11 +107,11 @@ const ChatPage = ({authUser}) => {
           const file = new File([blob], fileInfo.name, { type: mimeString });
           setImageFile(file);
           hasUserInput = true;
-          const sendPic=async ()=>{
+          const sendPic = async () => {
             await handleMessageSend({
               userId,
               chatId,
-              prompt: firstMessage||null,
+              prompt: firstMessage || null,
               file: file,
               text: firstMessage,
             });
@@ -133,7 +133,7 @@ const ChatPage = ({authUser}) => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages,chats, isLoading]);
+  }, [messages, chats, isLoading]);
 
   const handleSend = async () => {
     if (!input.trim() && !imagePreview) return;
@@ -159,16 +159,16 @@ const ChatPage = ({authUser}) => {
     setInput("");
     setIsLoading(true);
     try {
-    await handleMessageSend({
-      userId,
-      chatId,
-      prompt: input.trim() || null,
-      file: imageFile,
-      text: input.trim(),
-    });
-  } catch (error) {
-    console.error("Failed to send message:", error);
-  }
+      await handleMessageSend({
+        userId,
+        chatId,
+        prompt: input.trim() || null,
+        file: imageFile,
+        text: input.trim(),
+      });
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
     setIsLoading(false);
   };
 
@@ -192,65 +192,65 @@ const ChatPage = ({authUser}) => {
     e.target.value = "";
   };
 
- const handleCopy = async (msg) => {
-  if (msg.image) {
-    try {
-      // Create an offscreen image
-      const img = new window.Image();
-      img.crossOrigin = "anonymous"; // Avoid tainting canvas
-      img.src = msg.image;
+  const handleCopy = async (msg) => {
+    if (msg.image) {
+      try {
+        // Create an offscreen image
+        const img = new window.Image();
+        img.crossOrigin = "anonymous"; // Avoid tainting canvas
+        img.src = msg.image;
 
-      img.onload = async () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
+        img.onload = async () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
 
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
 
-        canvas.toBlob(async (blob) => {
-          try {
-            await navigator.clipboard.write([
-              new ClipboardItem({
-                "image/png": blob,
-              }),
-            ]);
-            showToast("Copied", "Image copied to clipboard.", "success");
-          } catch (err) {
-            console.error("Copy failed:", err);
-            showToast("Error", "Failed to copy image.", "error");
-          }
-        }, "image/png");
-      };
+          canvas.toBlob(async (blob) => {
+            try {
+              await navigator.clipboard.write([
+                new ClipboardItem({
+                  "image/png": blob,
+                }),
+              ]);
+              showToast("Copied", "Image copied to clipboard.", "success");
+            } catch (err) {
+              console.error("Copy failed:", err);
+              showToast("Error", "Failed to copy image.", "error");
+            }
+          }, "image/png");
+        };
 
-      img.onerror = () => {
-        showToast("Error", "Image load failed", "error");
-      };
-    } catch (err) {
-      console.error("Copy image failed:", err);
-      showToast("Error", "Failed to copy image", "error");
+        img.onerror = () => {
+          showToast("Error", "Image load failed", "error");
+        };
+      } catch (err) {
+        console.error("Copy image failed:", err);
+        showToast("Error", "Failed to copy image", "error");
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(msg.text || "");
+        showToast("Copied", "Message copied to clipboard.", "success");
+      } catch (err) {
+        console.error("Copy text failed:", err);
+        showToast("Error", "Failed to copy text", "error");
+      }
     }
-  } else {
-    try {
-      await navigator.clipboard.writeText(msg.text || "");
-      showToast("Copied", "Message copied to clipboard.", "success");
-    } catch (err) {
-      console.error("Copy text failed:", err);
-      showToast("Error", "Failed to copy text", "error");
-    }
-  }
-};
+  };
 
 
 
 
 
-  const handleDelete = (index,msg) => {
+  const handleDelete = (index, msg) => {
     handleMessageDelete({
-        fileId:msg?.fileId,
-        userId,
-        chatId,
-        messageIndex:index,
+      fileId: msg?.fileId,
+      userId,
+      chatId,
+      messageIndex: index,
     });
   };
 
@@ -260,29 +260,29 @@ const ChatPage = ({authUser}) => {
   };
 
   const handleSaveEdit = async () => {
-  try {
-    const updated = [...messages];
-    updated[editingIndex].text = editingText;
-    setMessages(updated);
-    const aiIndex = editingIndex + 1;
-    // console.log(editingIndex)
-    // console.log(aiIndex)
+    try {
+      const updated = [...messages];
+      updated[editingIndex].text = editingText;
+      setMessages(updated);
+      const aiIndex = editingIndex + 1;
+      // console.log(editingIndex)
+      // console.log(aiIndex)
 
-    await editMessage({
-      userId,
-      chatId,
-      messageIndex: editingIndex,
-      newText: editingText,
-    });
+      await editMessage({
+        userId,
+        chatId,
+        messageIndex: editingIndex,
+        newText: editingText,
+      });
 
-    showToast("Updated", "Message edited successfully.", "success");
-  } catch (error) {
-    showToast("Error", "Failed to edit message.", "error");
-  } finally {
-    setEditingIndex(null);
-    setEditingText("");
-  }
-};
+      showToast("Updated", "Message edited successfully.", "success");
+    } catch (error) {
+      showToast("Error", "Failed to edit message.", "error");
+    } finally {
+      setEditingIndex(null);
+      setEditingText("");
+    }
+  };
 
 
   const speakMessage = (text) => {
@@ -292,66 +292,66 @@ const ChatPage = ({authUser}) => {
     speechSynthesis.speak(utterance);
   };
   const startListening = () => {
-  if (!("webkitSpeechRecognition" in window)) {
-    alert("Speech recognition not supported in this browser.");
-    return;
-  }
-
-  const recognition = new window.webkitSpeechRecognition();
-  recognition.lang = "en-US";
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-
-  recognition.onresult = (event) => {
-    const result = event.results[0][0].transcript;
-    setTranscript(result);
-  };
-
-  recognitionRef.current = recognition;
-  recognition.start();
-};
-
-const stopListening = () => {
-  recognitionRef.current?.stop();
-  setInput(transcript);
-  setTranscript("");
-};
-
-const cancelListening = () => {
-  recognitionRef.current?.abort();
-  setTranscript("");
-};
-
-const handlePaste = (e) => {
-  const items = e.clipboardData?.items;
-  if (!items) return;
-
-  for (let item of items) {
-    if (item.type.indexOf("image") === 0) {
-      const file = item.getAsFile();
-
-      if (file && file.type.startsWith("image/")) {
-        e.preventDefault(); // Stop the paste from inserting base64
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          setImagePreview(event.target.result); // base64 string
-          setImageFile(file); // original file
-        };
-        reader.readAsDataURL(file);
-        return; // Exit after handling image
-      }
-    }
-
-    if (item.type === "text/plain") {
-      const pastedText = e.clipboardData.getData("text/plain");
-      // Don't preventDefault for text
-      setInput((prev) => prev + pastedText);
-       e.preventDefault(); 
+    if (!("webkitSpeechRecognition" in window)) {
+      alert("Speech recognition not supported in this browser.");
       return;
     }
-  }
-};
+
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event) => {
+      const result = event.results[0][0].transcript;
+      setTranscript(result);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const stopListening = () => {
+    recognitionRef.current?.stop();
+    setInput(transcript);
+    setTranscript("");
+  };
+
+  const cancelListening = () => {
+    recognitionRef.current?.abort();
+    setTranscript("");
+  };
+
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let item of items) {
+      if (item.type.indexOf("image") === 0) {
+        const file = item.getAsFile();
+
+        if (file && file.type.startsWith("image/")) {
+          e.preventDefault(); // Stop the paste from inserting base64
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            setImagePreview(event.target.result); // base64 string
+            setImageFile(file); // original file
+          };
+          reader.readAsDataURL(file);
+          return; // Exit after handling image
+        }
+      }
+
+      if (item.type === "text/plain") {
+        const pastedText = e.clipboardData.getData("text/plain");
+        // Don't preventDefault for text
+        setInput((prev) => prev + pastedText);
+        e.preventDefault();
+        return;
+      }
+    }
+  };
 
 
 
@@ -397,7 +397,7 @@ const handlePaste = (e) => {
                       {msg.text}
                       {msg.image && (
                         <>
-                          <ChakraImage 
+                          <ChakraImage
                             src={msg.image}
                             alt="uploaded"
                             mt={2}
@@ -425,14 +425,14 @@ const handlePaste = (e) => {
                   px={2}
                 >
                   <IconButton
-  icon={<MdContentCopy />}
-  size="xs"
-  aria-label="Copy"
-  variant="ghost"
-  color="white"
-  _hover={{ bg: "whiteAlpha.200" }}
-  onClick={() => handleCopy(msg)}
-/>
+                    icon={<MdContentCopy />}
+                    size="xs"
+                    aria-label="Copy"
+                    variant="ghost"
+                    color="white"
+                    _hover={{ bg: "whiteAlpha.200" }}
+                    onClick={() => handleCopy(msg)}
+                  />
 
                   <IconButton
                     icon={<FaVolumeUp />}
@@ -443,7 +443,7 @@ const handlePaste = (e) => {
                     _hover={{ bg: "whiteAlpha.200" }}
                     onClick={() => speakMessage(msg.text || "")}
                   />
-                  {msg.fromUser&&!msg.image && editingIndex !== idx && (
+                  {msg.fromUser && !msg.image && editingIndex !== idx && (
                     <IconButton
                       icon={<MdEdit />}
                       size="xs"
@@ -451,7 +451,7 @@ const handlePaste = (e) => {
                       variant="ghost"
                       color="white"
                       _hover={{ bg: "whiteAlpha.200" }}
-                      onClick={() => handleEdit(idx,msg)}
+                      onClick={() => handleEdit(idx, msg)}
                     />
                   )}
                   {msg.fromUser && editingIndex === idx && (
@@ -474,7 +474,7 @@ const handlePaste = (e) => {
                     color="white"
                     _hover={{ bg: "whiteAlpha.200" }}
                     isLoading={loadingg}
-                    onClick={() => handleDelete(idx,msg)}
+                    onClick={() => handleDelete(idx, msg)}
                   />
                 </HStack>
               )}
@@ -501,7 +501,7 @@ const handlePaste = (e) => {
           bg="gray.800"
           borderRadius="md"
         >
-          <ChakraImage 
+          <ChakraImage
             src={imagePreview}
             alt="preview"
             borderRadius="md"
@@ -544,63 +544,63 @@ const handlePaste = (e) => {
             onClick={() => fileInputRef.current.click()}
           />
           {transcript && (
-              <Flex
-                justify="space-between"
-                align="center"
-                bg="gray.700"
-                px={3}
-                py={2}
-                borderRadius="md"
-                mb={3}
-                color="white"
-                fontSize="sm"
-                wrap="wrap"
+            <Flex
+              justify="space-between"
+              align="center"
+              bg="gray.700"
+              px={3}
+              py={2}
+              borderRadius="md"
+              mb={3}
+              color="white"
+              fontSize="sm"
+              wrap="wrap"
+            >
+              <Text flex="1">{transcript}</Text>
+              <Button
+                size="sm"
+                colorScheme="green"
+                borderRadius="full"
+                mr={2}
+                onClick={stopListening}
               >
-                <Text flex="1">{transcript}</Text>
-                <Button
-                  size="sm"
-                  colorScheme="green"
-                  borderRadius="full"
-                  mr={2}
-                  onClick={stopListening}
-                >
-                  Correct
-                </Button>
-                <Button
-                  size="sm"
-                  colorScheme="red"
-                  borderRadius="full"
-                  onClick={cancelListening}
-                >
-                  Close
-                </Button>
-              </Flex>
-            )}
+                Correct
+              </Button>
+              <Button
+                size="sm"
+                colorScheme="red"
+                borderRadius="full"
+                onClick={cancelListening}
+              >
+                Close
+              </Button>
+            </Flex>
+          )}
 
 
           <Textarea
-  placeholder="Type your message..."
-  value={input}
-  onChange={(e) => setInput(e.target.value)}
-  onKeyDown={handleKeyDown}
-  onPaste={handlePaste} // ✅ Add this
-  resize="none"
-  overflowY="auto"
-  maxHeight="120px"
-  border="none"
-  bg="transparent"
-  color="white"
-  flex={1}
-  fontSize={isMobile ? "sm" : "md"}
-  _focus={{ border: "1px solid white" }}
-  css={{
-    "&::-webkit-scrollbar": { width: "4px" },
-    "&::-webkit-scrollbar-thumb": {
-      background: "#888",
-      borderRadius: "6px",
-    },
-  }}
-/>
+            placeholder="Type your message..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste} // ✅ Add this
+            resize="none"
+            overflowY="auto"
+            maxHeight="120px"
+            border="none"
+            bg="transparent"
+            color="white"
+            flex={1}
+            fontSize={isMobile ? "sm" : "md"}
+            _focus={{ border: "1px solid white" }}
+            css={{
+              "&::-webkit-scrollbar": { width: "4px" },
+              "&::-webkit-scrollbar-thumb": {
+                background: "#888",
+                borderRadius: "6px",
+              },
+            }}
+          />
 
 
           <IconButton
