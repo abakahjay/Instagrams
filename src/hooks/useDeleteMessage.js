@@ -6,6 +6,8 @@ const useDeleteMessage = () => {
   const [loadingg, setLoading] = useState(false);
   const showToast = useShowToast();
   const { setChats, setError } = useAiChatStore();
+  const apiUrl = import.meta.env.VITE_API_URL
+
   const handleMessageDelete = async ({
     fileId,
     userId,

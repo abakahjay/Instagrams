@@ -265,8 +265,8 @@ const ChatPage = ({authUser}) => {
     updated[editingIndex].text = editingText;
     setMessages(updated);
     const aiIndex = editingIndex + 1;
-    console.log(editingIndex)
-    console.log(aiIndex)
+    // console.log(editingIndex)
+    // console.log(aiIndex)
 
     await editMessage({
       userId,
