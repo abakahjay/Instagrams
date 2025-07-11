@@ -43,7 +43,7 @@ const useGetChat = (userId, chatId) => {
         setError(null)
         showToast("Success", `Chat: ${chatId} Found successful`, "success");
       } catch (err) {
-        console.log(err)
+        // console.log(err)
         const message = err.response?.data?.error||err.message;
         setError(message); // Update Zustand error state
         if(message&&message!=='canceled'){

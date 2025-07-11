@@ -61,6 +61,7 @@ const ChatPage = ({ authUser }) => {
 
   // Auto-scroll and initial load
   useEffect(() => {
+    const controller = new AbortController();
     setIsLoading(true);
     const firstMessage = localStorage.getItem("dashboardMessage");
     const fileInfoRaw = localStorage.getItem("fileInfo");
@@ -129,6 +130,9 @@ const ChatPage = ({ authUser }) => {
       setMessages(newMessages);
     }
     setIsLoading(false);
+    return ()=>{//This is a cleanup function
+            controller.abort();
+    }
   }, [chats]);
 
   useEffect(() => {
@@ -158,6 +162,14 @@ const ChatPage = ({ authUser }) => {
     setMessages(newMessages);
     setInput("");
     setIsLoading(true);
+    if(messages&&messages[0]?.text==='.'){
+      handleMessageDelete({
+        fileId: messages[0]?.fileId,
+        userId,
+        chatId,
+        messageIndex: 0,
+      });
+    }
     try {
       await handleMessageSend({
         userId,
