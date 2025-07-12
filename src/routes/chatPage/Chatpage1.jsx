@@ -299,7 +299,7 @@ const ChatPage = ({ authUser }) => {
       setEditingIndex(null);
       setEditingText("");
     }
-  };
+  }; 
 
 
   const speakMessage = (text) => {
