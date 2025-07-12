@@ -18,6 +18,7 @@
             prompt,
             file, // optional image file
             text = "", // optional caption
+            provider = "openrouter", // 🔄you can default to local or openai  or openrouter
         }) => {
             try {
                 setLoading(true);
@@ -28,6 +29,7 @@
                     formData.append("prompt", prompt);
                     formData.append("image", file); // ✅ real File object
                     formData.append("text", text);  // optional
+                    formData.append("provider", provider);
 
                     const response = await API.post("/api/v1/ai/ask", formData, {
                         headers: {
@@ -37,7 +39,7 @@
 
                     answer = response?.data?.response;
                 } else {
-                    const response = await API.post("/api/v1/ai/ask", { prompt });
+                    const response = await API.post("/api/v1/ai/ask", { prompt,provider });
                     answer = response?.data?.response;
                 }
 
