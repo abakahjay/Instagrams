@@ -130,14 +130,14 @@ const ChatPage = ({ authUser }) => {
       setMessages(newMessages);
     }
     setIsLoading(false);
-    return ()=>{//This is a cleanup function
-            controller.abort();
+    return () => {//This is a cleanup function
+      controller.abort();
     }
   }, [chats]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, chats, isLoading]);
+  }, [messages, chats, isLoading, loading]);
 
   const handleSend = async () => {
     if (!input.trim() && !imagePreview) return;
@@ -162,7 +162,7 @@ const ChatPage = ({ authUser }) => {
     setMessages(newMessages);
     setInput("");
     setIsLoading(true);
-    if(messages&&messages[0]?.text==='.'){
+    if (messages && messages[0]?.text === '.') {
       handleMessageDelete({
         fileId: messages[0]?.fileId,
         userId,
@@ -286,6 +286,11 @@ const ChatPage = ({ authUser }) => {
         messageIndex: editingIndex,
         newText: editingText,
       });
+      setTimeout(() => {
+        if (messageRefs.current[aiIndex]) {
+          messageRefs.current[aiIndex].scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100); // give DOM time to update
 
       showToast("Updated", "Message edited successfully.", "success");
     } catch (error) {
@@ -364,6 +369,7 @@ const ChatPage = ({ authUser }) => {
       }
     }
   };
+  const messageRefs = useRef([]);
 
 
 
@@ -381,6 +387,7 @@ const ChatPage = ({ authUser }) => {
           {messages.map((msg, idx) => (
             <Box
               key={idx}
+              ref={(el) => (messageRefs.current[idx] = el)}
               onMouseEnter={() => setHoveredIndex(idx)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
@@ -396,14 +403,56 @@ const ChatPage = ({ authUser }) => {
                   maxW="80%"
                 >
                   {editingIndex === idx ? (
-                    <Textarea
-                      size="sm"
-                      value={editingText}
-                      onChange={(e) => setEditingText(e.target.value)}
-                      bg="gray.800"
-                      color="white"
-                      border="1px solid white"
-                    />
+                    <Box
+                      bg="gray.700"
+                      borderRadius="xl"
+                      p={3}
+                      display="flex"
+                      flexDirection="column"
+                      gap={2}
+                    >
+                      <Textarea
+                        size="sm"
+                        value={editingText}
+                        onChange={(e) => setEditingText(e.target.value)}
+                        bg="gray.800"
+                        color="white"
+                        border="1px solid white"
+                        borderRadius="lg"
+                        px={4}
+                        py={2}
+                        fontSize={isMobile ? "sm" : "md"}
+                        resize="none"
+                        _focus={{
+                          border: "1px solid white",
+                          boxShadow: "0 0 0 1px white",
+                        }}
+                        _placeholder={{ color: "gray.400" }}
+                      />
+
+                      <HStack justify="flex-end">
+                        <Button
+                          size="sm"
+                          colorScheme="gray"
+                          variant="outline"
+                          onClick={() => {
+                            setEditingIndex(null);
+                            setEditingText("");
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          size="sm"
+                          colorScheme="blue"
+                          onClick={handleSaveEdit}
+                          isLoading={editingLoading}
+                        >
+                          Send
+                        </Button>
+                      </HStack>
+                    </Box>
+
                   ) : (
                     <>
                       {msg.text}
@@ -415,6 +464,7 @@ const ChatPage = ({ authUser }) => {
                             mt={2}
                             borderRadius="md"
                             maxH="200px"
+                            onLoad={() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })}
                           />
                           {msg.fileInfo && (
                             <Text fontSize="xs" mt={1}>
