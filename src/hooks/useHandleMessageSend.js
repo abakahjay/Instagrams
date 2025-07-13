@@ -6,7 +6,6 @@
 
 
         const useHandleMessageSend = () => {
-            const formData = new FormData();
             const [loading, setLoading] = useState(false);
             const showToast = useShowToast();
             const { addMessage } = useAddMessage();

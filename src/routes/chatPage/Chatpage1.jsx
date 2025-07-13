@@ -1,3 +1,6 @@
+import { CopyIcon } from "@chakra-ui/icons";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
 import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
@@ -11,6 +14,7 @@ import {
   Text,
   HStack,
   Button,
+  useClipboard
 } from "@chakra-ui/react";
 import {
   FaMicrophone,
@@ -30,6 +34,7 @@ import useAddMessage from "../../hooks/useAddMessage";
 import useHandleMessageSend from "../../hooks/useHandleMessageSend";
 import useDeleteMessage from "../../hooks/useDeleteMessage";
 import useEditMessage from "../../hooks/useEditMessage";
+
 
 
 const ChatPage = ({ authUser }) => {
@@ -294,6 +299,7 @@ const ChatPage = ({ authUser }) => {
 
       showToast("Updated", "Message edited successfully.", "success");
     } catch (error) {
+      console.log(error)
       showToast("Error", "Failed to edit message.", "error");
     } finally {
       setEditingIndex(null);
@@ -370,6 +376,93 @@ const ChatPage = ({ authUser }) => {
     }
   };
   const messageRefs = useRef([]);
+
+const renderMessageContent = (text) => {
+  if (!text) return null;
+
+  const codeBlockRegex = /```\s*([a-z]*)\n([\s\S]*?)```/g;
+  const elements = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = codeBlockRegex.exec(text)) !== null) {
+    const [fullMatch, language, code] = match;
+    const start = match.index;
+
+    // Add text before code block
+    if (start > lastIndex) {
+      elements.push(
+        <Text key={`text-${start}`} whiteSpace="pre-wrap">
+          {text.slice(lastIndex, start)}
+        </Text>
+      );
+    }
+
+    // Add syntax-highlighted code block with copy button
+    elements.push(
+      <Box
+        key={`code-${start}`}
+        position="relative"
+        my={4}
+        rounded="md"
+        overflow="hidden"
+        bg="#1e1e2f"
+      >
+        <CopyButton code={code} />
+        <SyntaxHighlighter
+          language={language || "javascript"}
+          style={dracula}
+          customStyle={{
+            padding: "1em",
+            margin: 0,
+            fontSize: "0.85rem",
+          }}
+        >
+          {code}
+        </SyntaxHighlighter>
+      </Box>
+    );
+
+    lastIndex = start + fullMatch.length;
+  }
+
+  // Add any remaining text after last code block
+  if (lastIndex < text.length) {
+    elements.push(
+      <Text key="text-end" whiteSpace="pre-wrap">
+        {text.slice(lastIndex)}
+      </Text>
+    );
+  }
+
+  return elements;
+};
+
+// CopyButton component
+const CopyButton = ({ code }) => {
+  const { hasCopied, onCopy } = useClipboard(code);
+  const handleCopy = () => {
+    onCopy(); // copy to clipboard
+    showToast("Copied", "Code copied to clipboard.", "success"); // show toast
+  };
+  return (
+    <IconButton
+      icon={<CopyIcon />}
+      aria-label="Copy Code"
+      size="sm"
+      variant="ghost"
+      color="gray.200"
+      position="absolute"
+      top={2}
+      right={2}
+      onClick={handleCopy}
+      _hover={{ bg: "whiteAlpha.200" }}
+      title={hasCopied ? "Copied!" : "Copy code"}
+    />
+  );
+};
+
+
 
 
 
@@ -455,7 +548,7 @@ const ChatPage = ({ authUser }) => {
 
                   ) : (
                     <>
-                      {msg.text}
+                      {renderMessageContent(msg.text)}
                       {msg.image && (
                         <>
                           <ChakraImage
