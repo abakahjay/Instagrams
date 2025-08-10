@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react/prop-types */
 import { CopyIcon } from "@chakra-ui/icons";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { dracula } from "react-syntax-highlighter/dist/esm/styles/prism";
-import React, { useState, useEffect, useRef } from "react";
+import  { useState, useEffect, useRef } from "react";
 import {
   Box,
   Flex,
@@ -30,7 +32,7 @@ import {
 import useShowToast from "../../hooks/useShowToast";
 import { useParams } from "react-router-dom";
 import useGetChat from "../../hooks/useGetChat";
-import useAddMessage from "../../hooks/useAddMessage";
+// import useAddMessage from "../../hooks/useAddMessage";
 import useHandleMessageSend from "../../hooks/useHandleMessageSend";
 import useDeleteMessage from "../../hooks/useDeleteMessage";
 import useEditMessage from "../../hooks/useEditMessage";
@@ -59,8 +61,8 @@ const ChatPage = ({ authUser }) => {
   const user = authUser.user ? authUser.user : authUser
   const userId = user._id;
 
-  const { error, chats } = useGetChat(userId, chatId);
-  const { addMessage } = useAddMessage();
+  const {  chats } = useGetChat(userId, chatId);
+  // const { addMessage } = useAddMessage();
   const { handleMessageSend, loading } = useHandleMessageSend();
   const { handleMessageDelete, loadingg } = useDeleteMessage();
 
@@ -112,6 +114,7 @@ const ChatPage = ({ authUser }) => {
           const blob = new Blob([ab], { type: mimeString });
           const file = new File([blob], fileInfo.name, { type: mimeString });
           setImageFile(file);
+          // eslint-disable-next-line no-unused-vars
           hasUserInput = true;
           const sendPic = async () => {
             await handleMessageSend({
